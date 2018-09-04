@@ -1,0 +1,174 @@
+body {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	font: 12pt Arial;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
+body {
+	background-color: #293A4A;
+	color: white;
+	margin: 75;
+	} 
+
+#Title {
+	/*background-color: #FF6C2C;*/
+	background-color: rgba(255, 108, 44, 0.6); 
+	color: white;
+	font-family: arial;
+	font-size: 2em;
+	opacity: 25:;
+	}
+
+/*#DivTableMain, #settings {
+	background: white;
+	color: black;
+	box-shadow: 0 4px 0px #333;
+	border-radius: 15px;
+	}*/
+
+
+#Title {
+	padding: 20px;
+	font-size: 2em;
+	box-shadow: 0 4px 0px #333;
+	border-radius: 15px;
+	}
+
+.TableTitle {
+	xdisplay: inline-block;
+	width: 100%;
+    	padding: 20px;
+    	color: #ff6c2c;
+    	font-size: 2em;
+	font-weight: bold;
+	box-shadow: 0 4px 0px #333;
+	border-radius: 15px;
+	}
+
+#DivTableMain {
+    display: block-inline;
+    width: 80%;
+    margin: 0;
+    padding: 0;
+    margin-left: auto;
+    margin-right: auto;
+    /*border: 1pt solid black;*/
+}
+
+
+#TableMain {
+    background: transparent;
+    xcolor: black;
+    /*xborder: 1px solid black;*/
+    text-align: center;
+    }
+
+#Ticker {
+    display: inline-block;
+    width: 80%;
+    min-height: 10px;
+    background: white;
+    margin-top: 20px;
+    text-align: left;
+    }
+
+#Ticker div {
+    display: inline-block;
+    position: relative;
+    padding: 10px;
+    background: lightblue;
+    margin: 2px;
+    }
+
+.cellLeft {
+	xdisplay: inline-block;
+	xwidth: 30%;
+	xfloat: left;
+	text-align: center;
+	vertical-align: top;
+	}
+
+.cellRight {
+    xdisplay: inline-block;
+    xwidth: 40%;
+	xfloat: right;
+    text-align: center;
+	vertical-align: top;
+	}
+
+#settings {
+	width: 80%;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 20px;
+	border: 1pt solid black;
+	text-transform: uppercase;
+	}
+
+#ScoreTable, #ScoreTodayTable, #ActivityTable {
+	display: inline-block;
+	background-color: rgba(0, 0, 0, 0.6); 
+	margin-left: auto;
+	margin-right: auto;
+	xwidth: 100%;
+	/*background: #333;*/
+  	width: 700px;
+  	margin: 70px auto;
+  	box-shadow: 0 4px 0px #333;
+  	border-radius: 15px;
+  	text-transform: uppercase;
+	}
+
+#Scores, #ScoresToday {
+	text-align: center;
+	display: inline-block;
+	background-color: rgba(0, 0, 0, 0.6); 
+	width: 40%;
+	color: black;
+	margin-left: auto;
+	margin-right: auto;
+	/*background: #333;*/
+  	width: 700px;
+  	margin: 70px auto;
+  	box-shadow: 0 4px 0px #333;
+  	border-radius: 15px;
+  	text-transform: uppercase;
+	}
+
+
+table {
+	background: white;
+	color: black;
+    	font-size: 1.2em;
+	border: 0px;
+	
+	}
+
+tr {
+    border: 1pt solid black;
+   }
+
+th {
+    xborder: 1pt solid lightgray;
+    border-top:	0;
+    border-bottom: 0;
+    padding: 5px;
+	text-align: left;
+	color: #ff6c2c;
+	background: white;
+    }
+
+td {
+	xborder: 1pt solid lightgray;
+	border-top: 0;
+	border-bottom: 0;
+	padding: 5px;
+	text-align: left;
+	}

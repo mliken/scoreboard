@@ -1,0 +1,364 @@
+<html>
+<head>
+  <title>AR Scoreboard</title>
+  <meta name="robots" content="noindex"/>
+  <meta name="description" content="Draft version of AR scoreboard"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+
+<body>
+<body background="sunrise.jpg">
+<div id="Title">cPQuest</div>
+
+<div id="settings">
+	Settings:
+	<div>
+		Data source:
+		<select id="sourceSelect">
+                        <option value="service"    >Service (live data)</option>
+                        <option value="servicetest">Service (test mode)</option>
+			<option value="client"     >Client (test mode)</option>
+		</select>
+	</div>
+	
+	<div>
+		Refresh: <input id="numUpdate" type="number" min="1" max="60" value="2"/> seconds.
+		<button id="btnUpdate">Force Update</button>
+	</div>
+
+</div>
+
+<div id="Scores">
+	<div class="TableTitle">High Scores</div>
+	<div id="ScoreTable"></div>
+</div>
+
+<div id="ScoresToday">
+        <div class="TableTitle">Today's Top Scores</div>
+        <div id="ScoreTodayTable"></div>
+</div>
+
+<div id="Ticker">
+</div>
+
+
+<script>
+
+var source = "service";
+var updateTimer = 2;
+var UITimer = .1;
+var UITimerFast = .01;
+var serviceUri = "//ar.cpanel.rocks/api/";
+
+var names    = [];
+var timestamp = Math.round((new Date()).getTime() / 1000);
+var activity = [];
+
+$(document).ready( function () {
+
+	//$("#btnUpdate").click(Update);
+
+	updateTimer = $("#numUpdate").val();
+	$("#numUpdate").click(function () {
+		updateTimer = $(this).val();
+		});
+		
+	$("#sourceSelect").change(function () {
+		source = $(this).val();
+		Update();
+		});
+
+	UpdateService();
+	UpdateUI();
+	UpdateUIFast();
+        LaunchTickerItem ("Alpha");
+	});
+
+//to call daily scores:
+//append YYYY-MM-DD to end of call
+//set BuildScoreTable to allow pointing to a dom element (no special rewrite)
+function UpdateService() {
+	var date = new Date().toISOString().split('T')[0];
+	switch (source) {
+		case "client":
+			BuildScoreTable(GetData(), "#ScoreTable");
+			BuildScoreTable(GetData(), "#ScoreTodayTable");
+			BuildActivityTable(FakeActivityData());
+			break;
+		case "servicetest":
+        		CallGet ("top_scores?test=1", function (data) {BuildScoreTable(data, "#ScoreTable");});
+                        CallGet ("top_scores/" + date + "?test=1", function (data) {alert(data);  BuildScoreTable(data, "#ScoreTodayTable");});
+        		CallGet ("top_scores?test=1", function (data) {BuildActivityTable(FakeActivityData());});
+			break;
+		case "service":
+                       	CallGet ("top_scores", function (data) {BuildScoreTable(data, "#ScoreTable");});
+                        CallGet ("top_scores/" + date, function (data) {BuildScoreTable(data, "#ScoreTodayTable");});
+                       	CallGet ("top_scores", function (data) {BuildActivityTable(FakeActivityData());});
+			break;
+		}
+	window.setTimeout(UpdateService, updateTimer * 1000);
+	}
+
+function UpdateUI () {
+	timestamp = Math.round((new Date()).getTime() / 1000);
+	BuildActivityTable();
+	//UpdateTicker();
+	//LaunchTickerItem ("Alpha");
+	window.setTimeout(UpdateUI, UITimer * 1000);
+	}
+
+function UpdateUIFast () {
+	UpdateTicker();
+	window.setTimeout(UpdateUIFast, UITimerFast * 1000);
+	}
+
+
+function LaunchTickerItem (what) {
+	var tickStart = parseInt($("#Ticker").css("width"));
+	var $t = $("<div></div>");
+	$t.text(what);
+	$t.css("left", tickStart + "px");
+	$("#Ticker").append($t);
+	}
+
+function UpdateTicker () {
+	//console.log($("#Ticker").css("width"));
+	//var $ticker = $("#Ticker");
+	//var $t = $("#Ticker>div:first");
+	//$t.text("TestEdited");
+	//$t.css("left", "100px");
+	//$ticker.append($t);
+
+	$("#Ticker>div").each (function () {
+	        //$(this).text("TestEdited");
+//console.log($(this).css("left"));
+		var pos = parseInt($(this).css("left"));
+		pos-=2;
+		if (pos >= 0) {
+		        $(this).css("left", pos+"px");
+			}
+		});
+
+
+	return;
+
+	var $delta = 1;
+	//grab all children and shift to the left
+	var leftmost = 0;
+	$("#Ticker>div").each(function () {
+		var p1 = $(this).position().left;
+		var p2 = $(this).attr("left");
+		$(this).attr("left", 1);
+		console.log(p1 + " / " + p2);
+		/*
+		$(this).offset().left = $(this).offset().left - 1; 
+		$(this).position().left = $(this).position().left - 0;
+		var right = $(this).position().left + $(this).width;
+		console.log($(this).position().left);
+		if (right > leftmost) {leftmost = right;}
+		if ($(this).position.left < ($(this).width*-1)) {$("#Ticker").remove($(this));}
+		*/
+		});
+
+	var $count = $("#Ticker>div").length;
+	//is there space for more?
+	var $item = $("<div></div>");
+	$item.text(PullName());
+	//$("#Ticker").append($item);
+//	console.log($count + " / " + leftmost);
+	if ($count > 5) {
+		//remove first child
+		//$("#Ticker>div:first").remove();
+		}
+	}
+
+
+function BuildScoreTable(data, tableDom) {
+	var $div = $(tableDom);
+	$div.empty();
+	var $table = $("<table></table>");
+	
+    	var $header = $("<tr></tr>");
+    	$header.append($("<th>Player's Name</td>"));
+    	$header.append($("<th>Daily Score</td>"));
+	$table.append($header);
+
+	for (var i in data) {
+		var $tr = $("<tr></tr>");
+		//$tr.append($("<td>" + data[i].id      + "</td>"));
+        	$tr.append($("<td>" + data[i].nickname  + "</td>"));
+        	$tr.append($("<td>" + data[i].score     + "</td>"));
+		$table.append($tr);
+		}
+
+	$div.append($table);
+	}
+
+
+function BuildActivityTable (data) {
+    $fadeStart = 2;
+    $fadeEnd   = 15;
+    UpdateActivity(data);
+    var $div = $("#ActivityTable");
+    $div.empty();
+
+    var $table = $("<table></table>");
+
+    var $header = $("<tr></tr>");
+    $header.append($("<th>Player's Name</td>"));
+    $header.append($("<th>Score Delta</td>"));
+    $table.append($header);
+
+
+    for (var i in activity) {
+	if (activity[i].age <= $fadeEnd) {
+	       	var $tr = $("<tr></tr>");
+	        //$tr.append($("<td>" + activity[i].id    + "</td>"));
+	    	$tr.append($("<td>"   + activity[i].nickname  + "</td>"));
+	    	$tr.append($("<td>"   + activity[i].age + "</td>"));
+		var fade = 0;
+		if (activity[i].age >= $fadeStart) {
+			fade = (activity[i].age-$fadeStart) / ($fadeEnd-$fadeStart);
+			if (fade > .95) fade = .95;
+			}
+		var lum = (255 * fade);
+		$tr.css("color", "rgb("+lum+","+lum+","+lum+")");
+	        $table.append($tr);
+		}
+        }
+
+    $div.append($table);
+    }
+
+
+function UpdateActivity (data) {
+	var max = 10;
+        if (data) {
+		//incorporate any new data being sent
+		console.log(JSON.stringify(data));
+		//add new items
+		for (var i in data) {
+			activity.unshift (data[i]);
+			}
+		}
+	//run through stored entries and update as needed
+	for (var i in activity) {
+		activity[i].age = timestamp - activity[i].timestamp;
+		}
+
+	//cut off anything over XX items
+	activity.splice(max,999);
+	//cut off anything that's gotten too old
+	}
+
+function FakeActivityData () {
+	//produce fake changes to integrate into Activity display
+	var result = [];
+	var events = Math.floor(Math.random() * 2);	//number of events to show during this update
+
+	ResetNames();
+
+	for (var i=0;  i<events;  i++) {
+		ResetNames();
+		var data = {};
+		data.nickname = PullName();
+		data.score = Math.floor(Math.random() * 10);
+		data.timestamp = timestamp;
+		result.push (data);
+        	}
+	return result;
+	}
+
+
+function GetData() {
+	var result = [];
+	var lastRand = 10000;
+	var players = 10;
+	var names = [
+		'Joe291',
+		'HeyYouzGuys',
+		'HowlerMonkey666',
+		'DieHippoDie',
+		'John Smith',
+		'vjones',
+		'woogiemonster',
+		'DarthSnark',
+		'JackSparrow12',
+		'tiamat',
+		'gorgonopsid',
+		'WookieRazor',
+		'UnimaginativeNick',
+		'DefaultUnnamedUser'
+		]
+
+	ResetNames();
+
+	for (var i=0;  i<players;  i++) {
+		//var randSelect = Math.floor(Math.random() * names.length);
+		var randScore = Math.floor(Math.random() * lastRand);
+		//var randName = names[randSelect];
+		//names.splice(randSelect,1);
+		var randName = PullName();
+		lastRand = randScore;
+		var data = {
+			id: i, score: randScore, nickname: randName
+			}
+		result.push(data);
+		}
+	return result;
+	}
+
+
+function ResetNames () {
+        names = [
+	        'Joe291',
+                'HeyYouzGuys',
+                'HowlerMonkey666',
+                'DieHippoDie',
+                'John Smith',
+                'vjones',
+                'woogiemonster',
+                'DarthSnark',
+                'JackSparrow12',
+                'tiamat',
+                'gorgonopsid',
+                'WookieRazor',
+                'UnimaginativeNick',
+                'DefaultUnnamedUser'
+                ];
+	}
+
+
+function PullName () {
+        var randSelect = Math.floor(Math.random() * names.length);
+        var randName = names[randSelect];
+        names.splice(randSelect,1);
+	return randName;
+	}
+
+function CallGet (uri, callback) {
+	$.ajax({
+		type: 		"GET",
+		crossDomain: true,
+		url: 		serviceUri + uri,
+		dataType:	"json",
+		success:	function (data) {
+						//alert (data);
+						if (callback) {callback(data.data);}
+						},
+		error:		function (data, exception) {
+						var errorData = data;
+						//alert ("Error " + JSON.stringify(data) + " " + exception);
+						if (callback) {callback(errorData);}
+						}
+		});
+	}
+
+
+
+</script>
+
+</body>
+
+</html>
